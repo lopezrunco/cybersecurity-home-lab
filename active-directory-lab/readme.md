@@ -13,7 +13,7 @@ I will be using:
 - Splunk (Ununtu Server)
 - Virtual Box
 
-## Downloadand install VirtualBox
+## Download and install VirtualBox
 
 Go to the [Virtual box download page](https://www.virtualbox.org/wiki/Downloads) and click on **Windows hosts**.
 
