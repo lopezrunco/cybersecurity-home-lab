@@ -6,4 +6,6 @@ Step-by-step documentation of the setup process for a personal cybersecurity hom
 
 - [X] [Basic home lab](./basic-home-lab/readme.md)
 
+- [ ] [Malware analysis lab](./malware-analysis-lab/readme.md)
+
 - [ ] [Active directory lab](./active-directory-lab/readme.md)
