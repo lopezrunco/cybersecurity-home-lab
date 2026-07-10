@@ -125,18 +125,18 @@ Check the connection by pinging Google, for example.
 In the **host machine** I downloaded the Linux version (.deb) of **Splunk Enterprise**. 
 
 Back to the Splunk virtual machine it's time to install the guest add-ons for VirtualBox by running `sudo apt-get install virtualbox-guest-additions-iso`.
-After a successfull installation, I added a new Shared folder for the Splunk virtual machine, by selecting `Devices => Shared Folders => Shared Folders Settings`. The **Folder Path** here must be the folder where we put the **Splunk installer**, in my case is named `ISOs`, and check the options `Read only`, `Auto mount` and `Make Permanent`.
+After a successfull installation, I added a new Shared folder for the Splunk virtual machine, by selecting `Devices => Shared Folders => Shared Folders Settings` and then `Add new Shared folder`. The **Folder Path** here must be the folder where we put the **Splunk installer**, in my case is named `isos`, and check the options `Read only`, `Auto mount` and `Make Permanent`.
 
-After rebooting the virtual machine, I added a user to the **vboxsf**. First, running `sudo apt-get install virtualbox-guest-utils` and rebooting, and after that we should be able to add the user by runnign the command `sudo adduser engendrodelmal vboxsf`. 
+After rebooting the virtual machine, I added a user to the **vboxsf**. First, running `sudo apt-get install virtualbox-guest-utils` and rebooting, and after that we should be able to add the user by running the command `sudo adduser splunk vboxsf`. 
 
-Then, I created a new directory called **share** and then mounted the shared folder onto the new **share** directory, in my case, by running `sudo mount -t vboxsf -o uid=1000,gid=1000 ISOs share/`:
+Then, I created a new directory called **share** and then mounted the shared folder onto the new **share** directory, in my case, by running `sudo mount -t vboxsf -o uid=1000,gid=1000 isos share/`:
 
 - `-t vboxsf` specifies the filesystem type, here means **VirtualBox Shared Folder**. 
 - `-o uid=1000` sets the **owner** of the mounted files to the user with UID `1000`, in my case the main user.
 - `gid=1000` sets the **group** ownership to the group with GID `1000`, usually the same as the main user's primary group. This makes sure that this user, not just root, can read/write the files in the shared folder.
-- `share/` is the **mount point**, the directory inside the Ubuntu virtual machine where the contents of `ISOs` will apear.
+- `share/` is the **mount point**, the directory inside the Ubuntu virtual machine where the contents of `isos` will apear.
 
-Navigatin to the `share` folder and running `ls -la` the list of files should look something like this:
+Navigating to the `share` folder and running `ls -la` the list of files should look something like this:
 
 ![Ubutntu server share folder](./assets/ubutntu-server-share-folder.png)
 
@@ -146,7 +146,7 @@ I installed Splunk running the command `sudo dpkg -i splunk-10.0.0-e8eb0c4654f8-
 
 Notice that all belongs to both the user and group `splunk` (which is good, as limits the permissions to that user and group), so I switched to that user by running `sudo -u splunk bash`.
 
-Now, changed to the directory `bin`, as the files listed in here all the binaries used by Splunk. Type `./splunk start` to run the installer and followed the steps. 
+Now, changed to the directory `bin`, for using one of the the binaries used by Splunk. Type `./splunk start` to run the installer and followed the steps. 
 
 After a successfull installation, I wanted to make sure that **Splunk** starts up every time the virtual machine reboots. I `exit` and changed the directory to `bin` and run the command `sudo ./splunk enable boot-start -user splunk`.
 
