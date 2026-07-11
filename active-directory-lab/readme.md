@@ -150,3 +150,80 @@ Now, changed to the directory `bin`, for using one of the the binaries used by S
 
 After a successfull installation, I wanted to make sure that **Splunk** starts up every time the virtual machine reboots. I `exit` and changed the directory to `bin` and run the command `sudo ./splunk enable boot-start -user splunk`.
 
+## Install Splunk Universal Forwarder & Cismon on the Target machine
+
+Once in the Windows 10 VM, I will set up a cpuple of things. First, change the host name by hitting Windows => This PC => Properties => Rename this PC. I will name it `target-pc`. Reb0ot and done.
+
+Next, I will change the IP address, in order to follow the stablished diagram. Open **Network and Internet settings** => **Change adapter options** =>  Right click in the adapter and select Properties => Look for Internet protocol v4, and select Properties => And in Use the following IP I will use `192.168.10.100`, a Subnet mask of `255.255.255.0`, a Default gateway of `192.168.10.1` and a Preffered DNS server `8.8.8.8`.
+
+After that, we should be able to open the Splunk server that runs in the port `8000` by typing `192.168.10.100:8000` (The Splunk VM should be running at the same time). The browser should show the Splunk enterprise login page:
+
+![Splunk enterprise login page](./assets/splunk-enterprise-login-page.png)
+
+After that, go to the Splunk website (www.splunk.com), log in with your account, click on **Trials & Downloads** and download **Universal Forwarder**. Once the .msi file is downloaded, open it and run the installer. 
+
+In **Use this UniversalForwarder with:** select the option **An on-premises Splunk Enterprise instance**. I will type `admin` as username and leave the installer to generate a random password.
+Skip the **Deployment server** options and in the **Receiving Indexer** is were we will set our Splunk server, so we type `192.168.10.10:9997` and click Install.
+
+Now is time to install **Sysmon** from [this](https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon) page. We will use Sysmon config from Olaf Hartong by this [repo](https://github.com/olafhartong/sysmon-modular), scrolling down and dowloading the file `sysmonconfig.xml`.
+
+Run a Powershell console with Admin priviledges on the extracted Sysmon folder. Then I will run the Sysmon64.exe file indicating the configuration file we just downloaded, for that I run the command `.\Sysmon64.exe -i ..\sysmonconfig.xml`. Once is installed you should see something like this in the console:
+
+![Sysmon installed](./assets/sysmon-installed.png)
+
+Now we need to instruct **Splunk Forwarder** on what we want to send over the **Splunk server**. To do that, we must configure a file called `inputs.conf`. Go to C: => Program files => Splunk universal forwarder =>  etc => system => default and copy the `inputs.conf` file. Go back to the **local** directory and paste the file (The reason is not to edit the default file in the default directory).
+
+There, I will edit the `inputs.conf` file with this content:
+
+```
+[WinEventLog://Application]
+
+index = endpoint
+
+disabled = false
+
+[WinEventLog://Security]
+
+index = endpoint
+
+disabled = false
+
+[WinEventLog://System]
+
+index = endpoint
+
+disabled = false
+
+[WinEventLog://Microsoft-Windows-Sysmon/Operational]
+
+index = endpoint
+
+disabled = false
+
+renderXml = true
+
+source = XmlWinEventLog:Microsoft-Windows-Sysmon/Operational
+```
+
+This file is instructing Splunk Forwarder to push the vents related to **Application**, **Security**, **System** and **Sysmon** over to the Splunk server. The `index = endpoint` means that all the events sent to the server will be placed under the index **endpoint**. If the Splunk server does not have an index named endpoint won't receive any of this events.
+
+An important thing, every time we edit the `inputs.conf` file, as now, we must restart the Splunk Universal Forwarder service. To do so, press the Windows key and search for Services and run it as Administrator. In the Services list search for SplunkForwarder, right click it and select Properties. 
+In the Properties windows go to the **Log On As** tab and you might see the selected account as **NT SERVICE\SplunkForwarder**. Leaving it like that would mean that the logs won't be collected, because of the permissions, so instead, slect the option **Local System account**:
+
+![Log on as Local System account](./assets/log-on-as-local-system-account.png)
+
+Then, restar the SplunkForwarder service.
+
+Now, head to the browser to the Splunk web portal and login using the credentials created during the Splunk install and you should be presented with the Splunk Administrator screen. 
+Recalling the `inputs.conf` file, all the events are being sent over an index call `endpoint`, here we will create that index. Go to the top bar and click on Settings => Indexes. We will be presented with all the indexes that Splunk has, click on **New Index** and create a new Index with the name `endpoint`. 
+
+Now, we need to make sure that the Splunk server receives the data. For that, click on Settings => Forwarding and receiving => Configure receiving => New receiving port => Type 9997 (the same port we introduced during the set up).
+
+If everything was done right, we should start seeing incoming data from the target machine. In the top bar click on Apps => Search & Reporting => In the Search abr type **index="endpoint"** and search. Many events will be returned, but focus on the left column in **host**, clickin on it we will see that correponds to **target-pc**, the name we gave to the machine previously.
+
+![Splunk host: target-pc](./assets/splunk-host-target-pc.png)
+
+Besides, checking in **source** we should see the values **Application**, **Security**, **System** and **Sysmon**, setted up previously as well.
+
+![Splunk sources](./assets/splunk-sources.png)
+
