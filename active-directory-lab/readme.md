@@ -39,7 +39,7 @@ Once you run the tool, on the **What do you want to do?** screen, select **Creat
 
 After downloading the Windows 10 ISO file, open VirtualBox and create your first virtual machine.
 
-Click on **New**, and the **Create Virtual Machine** wizard. wizard will appear. Name the machine `windows10`, select the ISO image, and check the box **Skip unattended installation** — this allows us to install the operating system manually. 
+Click on **New**, and the **Create Virtual Machine** wizard will appear. Name the machine `windows10`, select the ISO image, and check the box **Skip unattended installation** — this allows us to install the operating system manually. 
 
 Click **Next** to view the virtual machine specifications.
 
@@ -78,26 +78,27 @@ Now you can start the Kali virtual machine.
 
 ## Install Windows Server 2022
 
-I downloaded Windows Server from [Microsoft Evalatuion Center](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022) website, selecting the ISO file.
+Download Windows Server from the [Microsoft Evalatuion Center](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022), selecting the ISO file.
 
-Once in Virtual Box, I named the machine `ADDC01`, added the ISO image, left all the settings as default but check in **Skip Unattended Installation** because I do not want Virtual Box to automatically install it. In the **Hardware** tab I setted the **Base Memory** to 4GB, and that's all the configuration so far.
+Once in VirtualBox, name the machine `ADDC01`, add the ISO image, leave all the settings as default but check **Skip Unattended Installation**. In the **Hardware** tab I setted the **Base Memory** to 4GB, and that's all the configuration so far.
 
-Once in the virtual machine I choose the **Windows Server 2022 Standard Evaluation (Desktop Experience)** version of the OS. 
+Once in the virtual machine, choose the **Windows Server 2022 Standard Evaluation (Desktop Experience)** version of the OS.
 
-In the **Type of installation** screen I selected **Custom** and click **Next** until the installation started.
+In the **Type of installation** screen select **Custom** and click **Next** until the installation starts.
 
-After the set up was completed, I was presented with the **Customize settings** screen, where I created a password and then a **Login** screen to Enter the credentials I just created. Once in the Desktop, the **Server Manager** will open automatically. 
+After the setup is completed, you will be presented with the **Customize settings** screen. Create a password and then log in with the credentials you just created. Once on the Desktop, the **Server Manager** will open automatically.
 
 ## Install Splunk Server
 
-I downloaded the [Ubuntu Server](https://ubuntu.com/server) **22.04.5 LTS version**. Once in VirtualBox, I created a new machine named **Splunk** with the default configuration but checking **Skip Unattended Installation**, I set the **Base memory** in 4GB, the **Processors** in 2 and the **Virtual Hard disk** in 50GB.
+Download the [Ubuntu Server](https://ubuntu.com/server) **22.04.5 LTS version**. Once in VirtualBox, create a new machine named **Splunk** with the default configuration but check **Skip Unattended Installation**, set the **Base memory** to 4GB, the **Processors** to 2 and the **Virtual Hard disk** to 50GB.
 
-Run the virtual machine and in the presented screen select **Try or Install Ubuntu Server**, continuing with the default options unitl the **Profile setup** screen, there I entered the credentials, hit **Done**. I left the next configurations by default and started the installation.
-After it finished, I rebooted the virtual machine. If you are presented with the **Failed unmounting /cdrom** error, just press Enter.
+Run the virtual machine and in the presented screen select **Try or Install Ubuntu Server**, continuing with the default options until the **Profile setup** screen. Enter your credentials and hit **Done**. Leave the remaining configurations as default and start the installation.
+
+After it finishes, reboot the virtual machine. If you are presented with the **Failed unmounting /cdrom** error, just press Enter.
 
 ![Error](./assets/splunk-boot-error.png)
 
-After Ubuntu Server finished the reboot, I was presented with a login screen where I entered the credentials I created earlier. After a successfull login, I run the command `sudo apt-get update && sudo apt-get upgrade -y` to update and upgrade all the repositories and after that the server is ready to go.
+After Ubuntu Server finishes the reboot, log in with the credentials you created earlier. After a successful login, run the command `sudo apt-get update && sudo apt-get upgrade -y` to update and upgrade all the repositories. The server is now ready to go.
 
 At this point, I have the four virtual machines ready:
 
@@ -105,16 +106,17 @@ At this point, I have the four virtual machines ready:
 
 ## Create a network
 
-Back in Virtual box I checked that the network setting were set to NAT, that way, the virtual machines can be on the same network and still have internet access. Clicking in **Tools** and then **Network**, then selected **NAT networks** and click on **Create**.
-I named this network **AD-Network**, set the IPv4 Prefix to `192.168.10.0/24` and checked the **Enable DHCP** option. Then I changed the network settings on every machine, selecting the **NAT Network** attached and selecting the network I created.
+In VirtualBox, verify that the network settings are set to NAT Network so the virtual machines can communicate with each other while still having internet access. Click on **Tools** then **Network**, select **NAT Networks** and click **Create**.
+
+Name this network **AD-Network**, set the IPv4 Prefix to `192.168.10.0/24` and check the **Enable DHCP** option. Then change the network settings on every machine, selecting **NAT Network** and choosing the network you just created.
 
 ## Configure Splunk Server IP
 
-I asigned a static IP to the Splunk Server by running the command `sudo nano /etc/netplan/00-installer-config.yaml`. In this file I indicated that I do not want any DHCP, assigned the address `192.168.10.10/24`, the Google's DNS IP `8.8.8.8` and a default route via `192.168.10.1`, at the end, the fily should look like this:
+Assign a static IP to the Splunk Server by running `sudo nano /etc/netplan/00-installer-config.yaml`. In this file, indicate that you do not want DHCP, assign the address `192.168.10.10/24`, set the DNS to Google's IP `8.8.8.8` and a default route via `192.168.10.1`. The file should look like this:
 
 ![00-installer-config.yaml](./assets/splunk-server-yaml-config.png)
 
-Saved the file and run `sudo netplan apply` and to verify the changes `ip a`, the ip address should be `192.168.10.10/24`:
+Save the file and run `sudo netplan apply`. To verify the changes run `ip a` — the IP address should now be `192.168.10.10/24`:
 
 ![Splunk server static IP](./assets/splunk-server-static-ip.png)
 
@@ -122,58 +124,63 @@ Check the connection by pinging Google, for example.
 
 ## Install Splunk in the Ubuntu server
 
-In the **host machine** I downloaded the Linux version (.deb) of **Splunk Enterprise**. 
+On the **host machine**, download the Linux version (.deb) of **Splunk Enterprise**.
 
-Back to the Splunk virtual machine it's time to install the guest add-ons for VirtualBox by running `sudo apt-get install virtualbox-guest-additions-iso`.
-After a successfull installation, I added a new Shared folder for the Splunk virtual machine, by selecting `Devices => Shared Folders => Shared Folders Settings` and then `Add new Shared folder`. The **Folder Path** here must be the folder where we put the **Splunk installer**, in my case is named `isos`, and check the options `Read only`, `Auto mount` and `Make Permanent`.
+Back in the Splunk virtual machine, install the guest add-ons for VirtualBox by running `sudo apt-get install virtualbox-guest-additions-iso`.
 
-After rebooting the virtual machine, I added a user to the **vboxsf**. First, running `sudo apt-get install virtualbox-guest-utils` and rebooting, and after that we should be able to add the user by running the command `sudo adduser splunk vboxsf`. 
+After a successful installation, add a new Shared folder for the Splunk virtual machine by selecting `Devices => Shared Folders => Shared Folder Settings` and then `Add new Shared folder`. The **Folder Path** must point to the folder where you saved the **Splunk installer** — in this example it is named `isos`. Check the options `Read only`, `Auto mount` and `Make Permanent`.
 
-Then, I created a new directory called **share** and then mounted the shared folder onto the new **share** directory, in my case, by running `sudo mount -t vboxsf -o uid=1000,gid=1000 isos share/`:
+After rebooting the virtual machine, add a user to **vboxsf** by first running `sudo apt-get install virtualbox-guest-utils`, rebooting again, and then running `sudo adduser splunk vboxsf`.
 
-- `-t vboxsf` specifies the filesystem type, here means **VirtualBox Shared Folder**. 
-- `-o uid=1000` sets the **owner** of the mounted files to the user with UID `1000`, in my case the main user.
-- `gid=1000` sets the **group** ownership to the group with GID `1000`, usually the same as the main user's primary group. This makes sure that this user, not just root, can read/write the files in the shared folder.
-- `share/` is the **mount point**, the directory inside the Ubuntu virtual machine where the contents of `isos` will apear.
+Then, create a new directory called **share** and mount the shared folder onto it by running `sudo mount -t vboxsf -o uid=1000,gid=1000 isos share/`:
 
-Navigating to the `share` folder and running `ls -la` the list of files should look something like this:
+- `-t vboxsf` specifies the filesystem type — **VirtualBox Shared Folder**.
+- `-o uid=1000` sets the **owner** of the mounted files to the user with UID `1000`.
+- `gid=1000` sets the **group** ownership to GID `1000`, usually the same as the main user's primary group.
+- `share/` is the **mount point** where the contents of `isos` will appear.
+
+Navigate to the `share` folder and run `ls -la`. The output should look something like this:
 
 ![Ubutntu server share folder](./assets/ubutntu-server-share-folder.png)
 
-I installed Splunk running the command `sudo dpkg -i splunk-10.0.0-e8eb0c4654f8-linux-amd64.deb`. After the installation, Splunk is installed uder `/opt/splunk` so I changed to that directory and run `ls -la` to list the content:
+Install Splunk by running `sudo dpkg -i splunk-10.0.0-e8eb0c4654f8-linux-amd64.deb`. After installation, Splunk will be located under `/opt/splunk`. Change to that directory and run `ls -la` to list its contents:
 
 ![/opt/splunk content](./assets/opt-splunk-content.png)
 
-Notice that all belongs to both the user and group `splunk` (which is good, as limits the permissions to that user and group), so I switched to that user by running `sudo -u splunk bash`.
+Notice that everything belongs to both the user and group `splunk`, which limits permissions appropriately. Switch to that user by running `sudo -u splunk bash`.
 
-Now, changed to the directory `bin`, for using one of the the binaries used by Splunk. Type `./splunk start` to run the installer and followed the steps. 
+Change to the `bin` directory and run `./splunk start` to launch the installer and follow the steps.
 
-After a successfull installation, I wanted to make sure that **Splunk** starts up every time the virtual machine reboots. I `exit` and changed the directory to `bin` and run the command `sudo ./splunk enable boot-start -user splunk`.
+After a successful installation, to make sure Splunk starts on every reboot, exit back to your main user, change to the `bin` directory and run `sudo ./splunk enable boot-start -user splunk`.
 
-## Install Splunk Universal Forwarder & Cismon on the Target machine
+## Install Splunk Universal Forwarder & Sysmon on the Target machine
 
-Once in the Windows 10 VM, I will set up a cpuple of things. First, change the host name by hitting Windows => This PC => Properties => Rename this PC. I will name it `target-pc`. Reb0ot and done.
+In the Windows 10 VM, start by changing the hostname. Go to Windows => This PC => Properties => Rename this PC and name it `target-pc`. Reboot.
 
-Next, I will change the IP address, in order to follow the stablished diagram. Open **Network and Internet settings** => **Change adapter options** =>  Right click in the adapter and select Properties => Look for Internet protocol v4, and select Properties => And in Use the following IP I will use `192.168.10.100`, a Subnet mask of `255.255.255.0`, a Default gateway of `192.168.10.1` and a Preffered DNS server `8.8.8.8`.
+Next, change the IP address to match the established network diagram. Open **Network and Internet settings** => **Change adapter options** => right-click the adapter and select **Properties** => select **Internet Protocol Version 4** => **Properties**. Set the following:
 
-After that, we should be able to open the Splunk server that runs in the port `8000` by typing `192.168.10.100:8000` (The Splunk VM should be running at the same time). The browser should show the Splunk enterprise login page:
+- IP: `192.168.10.100`
+- Subnet mask: `255.255.255.0`
+- Default gateway: `192.168.10.1`
+- Preferred DNS server: `8.8.8.8`
+
+To verify the setup, open a browser and navigate to `192.168.10.10:8000` (make sure the Splunk VM is running). The Splunk Enterprise login page should appear:
 
 ![Splunk enterprise login page](./assets/splunk-enterprise-login-page.png)
 
-After that, go to the Splunk website (www.splunk.com), log in with your account, click on **Trials & Downloads** and download **Universal Forwarder**. Once the .msi file is downloaded, open it and run the installer. 
+Go to [www.splunk.com](https://www.splunk.com), log in, click on **Trials & Downloads** and download **Universal Forwarder**. Once the `.msi` file is downloaded, run the installer.
 
-In **Use this UniversalForwarder with:** select the option **An on-premises Splunk Enterprise instance**. I will type `admin` as username and leave the installer to generate a random password.
-Skip the **Deployment server** options and in the **Receiving Indexer** is were we will set our Splunk server, so we type `192.168.10.10:9997` and click Install.
+In **Use this UniversalForwarder with**, select **An on-premises Splunk Enterprise instance**. Use `admin` as the username and let the installer generate a random password. Skip the **Deployment server** options. In **Receiving Indexer**, enter `192.168.10.10:9997` and click **Install**.
 
-Now is time to install **Sysmon** from [this](https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon) page. We will use Sysmon config from Olaf Hartong by this [repo](https://github.com/olafhartong/sysmon-modular), scrolling down and dowloading the file `sysmonconfig.xml`.
+Now install **Sysmon** from [this page](https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon). Download the Sysmon config from Olaf Hartong's [repo](https://github.com/olafhartong/sysmon-modular) — scroll down and download `sysmonconfig.xml`.
 
-Run a Powershell console with Admin priviledges on the extracted Sysmon folder. Then I will run the Sysmon64.exe file indicating the configuration file we just downloaded, for that I run the command `.\Sysmon64.exe -i ..\sysmonconfig.xml`. Once is installed you should see something like this in the console:
+Open a PowerShell console with Administrator privileges in the extracted Sysmon folder and run `.\Sysmon64.exe -i ..\sysmonconfig.xml`. Once installed, the console should look like this:
 
 ![Sysmon installed](./assets/sysmon-installed.png)
 
-Now we need to instruct **Splunk Forwarder** on what we want to send over the **Splunk server**. To do that, we must configure a file called `inputs.conf`. Go to C: => Program files => Splunk universal forwarder =>  etc => system => default and copy the `inputs.conf` file. Go back to the **local** directory and paste the file (The reason is not to edit the default file in the default directory).
+Now configure **Splunk Forwarder** to define what logs to send to the Splunk server. Navigate to `C:\Program Files\SplunkUniversalForwarder\etc\system\default`, copy the `inputs.conf` file and paste it into the `local` directory — this avoids editing the default file directly.
 
-There, I will edit the `inputs.conf` file with this content:
+Edit the `inputs.conf` file in the `local` directory with this content:
 
 ```
 [WinEventLog://Application]
@@ -205,25 +212,20 @@ renderXml = true
 source = XmlWinEventLog:Microsoft-Windows-Sysmon/Operational
 ```
 
-This file is instructing Splunk Forwarder to push the vents related to **Application**, **Security**, **System** and **Sysmon** over to the Splunk server. The `index = endpoint` means that all the events sent to the server will be placed under the index **endpoint**. If the Splunk server does not have an index named endpoint won't receive any of this events.
+This instructs the Splunk Forwarder to push **Application**, **Security**, **System** and **Sysmon** events to the Splunk server under the index `endpoint`. Note that if the Splunk server does not have an index named `endpoint`, it will not receive any of these events.
 
-An important thing, every time we edit the `inputs.conf` file, as now, we must restart the Splunk Universal Forwarder service. To do so, press the Windows key and search for Services and run it as Administrator. In the Services list search for SplunkForwarder, right click it and select Properties. 
-In the Properties windows go to the **Log On As** tab and you might see the selected account as **NT SERVICE\SplunkForwarder**. Leaving it like that would mean that the logs won't be collected, because of the permissions, so instead, slect the option **Local System account**:
+Every time you edit `inputs.conf`, restart the Splunk Universal Forwarder service. Press the Windows key, search for **Services** and run it as Administrator. Find **SplunkForwarder**, right-click and select **Properties**. Go to the **Log On** tab — if you see **NT SERVICE\SplunkForwarder**, change it to **Local System account**, otherwise logs will not be collected due to permission restrictions:
 
 ![Log on as Local System account](./assets/log-on-as-local-system-account.png)
 
-Then, restar the SplunkForwarder service.
+Restart the SplunkForwarder service.
 
-Now, head to the browser to the Splunk web portal and login using the credentials created during the Splunk install and you should be presented with the Splunk Administrator screen. 
-Recalling the `inputs.conf` file, all the events are being sent over an index call `endpoint`, here we will create that index. Go to the top bar and click on Settings => Indexes. We will be presented with all the indexes that Splunk has, click on **New Index** and create a new Index with the name `endpoint`. 
+Head to the Splunk web portal at `192.168.10.10:8000` and log in. Go to **Settings => Indexes**, click **New Index** and create one named `endpoint`.
 
-Now, we need to make sure that the Splunk server receives the data. For that, click on Settings => Forwarding and receiving => Configure receiving => New receiving port => Type 9997 (the same port we introduced during the set up).
+Then go to **Settings => Forwarding and receiving => Configure receiving => New receiving port** and enter `9997`.
 
-If everything was done right, we should start seeing incoming data from the target machine. In the top bar click on Apps => Search & Reporting => In the Search abr type **index="endpoint"** and search. Many events will be returned, but focus on the left column in **host**, clickin on it we will see that correponds to **target-pc**, the name we gave to the machine previously.
+To verify data is flowing, click **Apps => Search & Reporting**, type `index="endpoint"` in the search bar and press Enter. In the left column, click **host** — you should see `target-pc`. Click **source** and you should see **Application**, **Security**, **System** and **Sysmon**:
 
 ![Splunk host: target-pc](./assets/splunk-host-target-pc.png)
 
-Besides, checking in **source** we should see the values **Application**, **Security**, **System** and **Sysmon**, setted up previously as well.
-
 ![Splunk sources](./assets/splunk-sources.png)
-
